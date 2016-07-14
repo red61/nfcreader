@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">NFCReader</string>
+    <string name="result_failed">Scan Failed</string>
+</resources>
