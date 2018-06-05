@@ -1,6 +1,7 @@
 package com.red61.android.nfcreader;
 
 import android.app.Activity;
+import android.app.Application;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -13,6 +14,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
+
+import com.google.android.gms.analytics.GoogleAnalytics;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 
 import java.math.BigInteger;
 import java.net.MalformedURLException;
@@ -31,6 +36,8 @@ public class NFCReader extends AppCompatActivity {
     private TextView homeText;
     private URL returnUrl;
     private static final String PARAM_NAME = "returnUrl";
+    private static GoogleAnalytics sAnalytics;
+    private static Tracker tracker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +99,9 @@ public class NFCReader extends AppCompatActivity {
         } else {
             homeText.setText("NFC reader is not enabled");
         }
+
+        sAnalytics = GoogleAnalytics.getInstance(this);
+        tracker = getDefaultTracker();
     }
 
     public void onNewIntent(Intent intent) {
@@ -104,6 +114,12 @@ public class NFCReader extends AppCompatActivity {
         if(returnUrl != null) {
             String url = returnUrl + "ok&uid=" + uid;
             Log.i(TAG,"Load url : " + url);
+            tracker.send(new HitBuilders.EventBuilder()
+                    .setCategory("Action")
+                    .setAction("Return value")
+                    .setLabel(returnUrl.getHost())
+                    .build());
+
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
             finish();
         }
@@ -126,6 +142,22 @@ public class NFCReader extends AppCompatActivity {
                 homeText.setText(e.getMessage());
             }
         }
+        tracker.setScreenName(this.getClass().getSimpleName());
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
+    }
+
+    /**
+     * Gets the default {@link Tracker} for this {@link Application}.
+     *
+     * @return tracker
+     */
+    synchronized public Tracker getDefaultTracker() {
+        // To enable debug logging use: adb shell setprop log.tag.GAv4 DEBUG
+        if (tracker == null) {
+            tracker = sAnalytics.newTracker(R.xml.global_tracker);
+        }
+
+        return tracker;
     }
 
     //To display the UID
