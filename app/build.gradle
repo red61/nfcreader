@@ -7,8 +7,8 @@ android {
     defaultConfig {
         applicationId "com.red61.android.nfcreader"
         minSdkVersion 15
-        targetSdkVersion 19
-        versionCode 1
+        targetSdkVersion 26
+        versionCode 3
         versionName "1.0"
     }
     buildTypes {
